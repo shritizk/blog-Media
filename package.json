@@ -1,6 +1,7 @@
 {
   "name": "blog-media",
   "version": "1.0.0",
+  "description": "this is project is to work as a blog website just like tiwtter",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -8,12 +9,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
-    "tsc": "^2.0.4",
-    "typescript": "^5.6.3"
-  },
-  "devDependencies": {
-    "prisma": "^5.21.0"
+    "@types/express": "^5.0.0",
+    "express": "^4.21.1"
   }
 }
