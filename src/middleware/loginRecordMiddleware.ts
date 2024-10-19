@@ -9,7 +9,7 @@ import { statusCode } from '../types';
 
 // This function is the middleware that will check if email and token is already in db "loginRecord"
 // if user already in here then it will res with a error 
-export async  function loginRecordMiddleWare(req : Request , res : Response , next : NextFunction) {
+export async  function loginRecordMiddleWare(req : Request , res : Response , next : NextFunction) : Promise<void>{
     const payload = req.body;
     // check if this email is in db and have a token with it , if yes then remove and send a error else next.
     
@@ -29,7 +29,7 @@ export async  function loginRecordMiddleWare(req : Request , res : Response , ne
             }
         });
 
-        return res.status(statusCode.accessDenied).json({
+        res.status(statusCode.accessDenied).json({
             msg : "already logged in !!" , 
             ReqStatus : false
         });
