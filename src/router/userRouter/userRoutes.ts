@@ -2,7 +2,7 @@ import {Router , Response , Request} from 'express';
 export const router  = Router();
 
 // hashing 
-import {compare, hashSync} from 'bcryptjs';
+import {hashSync} from 'bcryptjs';
 import { sign} from 'jsonwebtoken';
 
 //.env
