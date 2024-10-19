@@ -98,8 +98,10 @@ router.get('/login',loginRecordMiddleWare,async function(req,res){
                     ReqStatus: false
                 });
             }else{
+                const time = new Date()
                 const token = sign({
-                    email : payload.email
+                    email : payload.email , 
+                    time
                 }, jsonKey);
                res.cookie('auth_token' , token)   
             }   
@@ -110,12 +112,6 @@ router.get('/login',loginRecordMiddleWare,async function(req,res){
             })
         }
     } 
-
-
-    
-
-
-    
 
 });
 
