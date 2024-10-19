@@ -9,6 +9,12 @@ import { sign} from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
+// types 
+import { statusCode } from '../../types';
+
+// middleware 
+import { loginRecordMiddleWare } from '../../middleware/loginRecordMiddleware';
+
 
 //db 
 import {PrismaClient} from '@prisma/client';
@@ -16,14 +22,7 @@ const prisma = new PrismaClient;
 // here i am expecting that all the input validation are already done in front end it self 
 
 
-// types and codes 
-enum statusCode {
-    ok = 200 , 
-    accessDenied  = 404 , 
-    alreadyExist = 409 , 
-    userCreated  = 201,
-    ServerError = 500
-}   
+
 
 // login - sighup route
 router.post('/sighup',async  function( req : Request, res : Response) {
@@ -71,7 +70,7 @@ router.post('/sighup',async  function( req : Request, res : Response) {
 });
 
 // login 
-router.get('/login',async function(req,res){
+router.get('/login',loginRecordMiddleWare,async function(req,res){
     const payload = req.body;
     // check if user exist or not 
      const result = await prisma.user.findUnique({
