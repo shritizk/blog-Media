@@ -10,16 +10,47 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // types 
-import { statusCode } from '../../types';
+import { Result, statusCode, userEcxist } from '../../types';
 
 // middleware 
 
 
 //db 
-import {PrismaClient} from '@prisma/client';
+import {PrismaClient, user} from '@prisma/client';
 const prisma = new PrismaClient;
 // here i am expecting that all the input validation are already done in front end it self 
 
+// function to check if user exist in userDb or not 
+// {
+//     email?: string ;
+//     userId? : number
+// }
+
+async function userExist( prop : userEcxist) : Promise<Result | null> {
+    try { 
+        if(prop.userId){    
+            const result = await prisma.user.findUnique({
+                where : {
+                    id : prop.userId
+                }
+            }) ; 
+            return result ; 
+        }else if(prop.email){
+            const result = await prisma.user.findUnique({
+                where : {
+                    email : prop.email
+                }
+            }) ; 
+            return result ; 
+        }else{
+            throw new Error("please provide userId or email");
+        }; 
+        
+    }catch(e){
+        console.log(e);
+        throw new Error(" sorry something went wrong ");
+    }
+};   
 
 
 
@@ -32,16 +63,12 @@ router.post('/sighup',async  function( req : Request, res : Response) {
     // password 
     try { 
         // check if user exist in db or not and if not then add else send a error about that 
-       const result = await prisma.user.findUnique({
-        where : {
-            email : payload.email
-        }
-       });
+       const result = await userExist({ email  : payload.email} )
        if(result){ // user already exist 
         res.status(statusCode.alreadyExist).json({
             msg : "user already exist !!" , 
             ReqStatus : false , 
-            userEmail : result.email
+            userEmail : payload.email
         });
        }else{// user created 
 
@@ -75,11 +102,7 @@ router.get('/login',async function(req,res){
     const payload = req.body;
     // check if user exist or not 
     try{
-        const result = await prisma.user.findUnique({
-            where : {
-                email : payload.email
-            }
-           });
+        const result = await userExist({userId : payload.userId})
             // if yes then check password else return false 
            
             if(!result){ // user do not exist send error  
@@ -134,9 +157,20 @@ router.get('/login',async function(req,res){
 // edit userData router 
 // edit data of a user with email to verify  credibility of the source .:::: authed 
 
-// step 1  ::: create a dynamic email sender based on 
+// step 1  ::: create a dynamic email sender based on :: data -> text  ,  userId
+function emailSendder(){
+    
+}
+router.post('credentialChnager',async function(req : Request , res : Response){
+    const payload = req.body;
+    // first check if user exist or not 
+    const result = await userExist({ userId : payload.userId });
+    if(result ){
 
+    }else{
 
+    }
+});
 
 // delete or disable router 
 

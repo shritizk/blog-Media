@@ -32,3 +32,10 @@ model loginRecord {
   token String @unique
 }
 
+// otp db
+model otpstore {
+   id Int @id @default(autoincrement())
+   userId Int
+   otp Int
+   time DateTime
+}

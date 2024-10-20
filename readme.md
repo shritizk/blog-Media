@@ -15,6 +15,10 @@ feature to add
     with 3 things in it . " id " which is auto genrated , " user id "  which is taken from user table  , "token " which is same cookie that got genrated at tgat time  ,  "date" which is time same used while genrateing the jwt token .
 
     # email sender for changed 
+    **NOTE** here user will send reqData in body that will contain 
+        -> userId :: to be searched in db to check if user even exist 
+        -> email :: to send email to user 
+        
     If a user wants to change password , credentials or email . They have to go through a email otp verification 
     -> create a email sender with dedicated msg ::::  done 
     -> create a otp db to save send otp :::: 
