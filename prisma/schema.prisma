@@ -21,9 +21,14 @@ id      Int      @id @default(autoincrement())
   password String 
 }
 
+// this table will manage login sessons for the users
+// this is the table as well where a person can tell req to remove some other sesson alive 
+// data that user will get is the Date of login 
 
 model loginRecord { 
-  id Int @id @default(autoincrement())
-  email String @unique
+ id      Int      @id @default(autoincrement())
+ date DateTime 
+ userId Int 
   token String @unique
 }
+

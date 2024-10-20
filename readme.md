@@ -1,6 +1,8 @@
 ## blog project 
 this is project is to work as a blog website just like tiwtter
 
+
+
 feature to add 
 1) login / sighup / edit user data / delete or disable user 
 
@@ -9,14 +11,17 @@ feature to add
     # login  router 
     In this route i first check if user exist or not  , if not then return false 
     else check password  , if the password is correct then return a token .
+    When even user login , it stores its token and creates a row in LoginRecord table 
+    with 3 things in it . " id " which is auto genrated , " user id "  which is taken from user table  , "token " which is same cookie that got genrated at tgat time  ,  "date" which is time same used while genrateing the jwt token .
 
-    # extra micro service 
-    Here I have created a small micro service that if a user is already logged in on a device and if user try to login to another device it will logout the user user from first machine . 
-    -> how will it logout . 
-        For that i have added a middleware in all the req from login and other things that will always check the 2nd db "loginRecord" for the token and the the assosiated email with it . If it do exist at the time of logIn it will del it and when the machine that the user is already logged in try to access some authed route it will send a error as the token is not in the db "loginRecord" . 
-    
-    ::::: I might try to add something that will force fully logout user . ::::::
- 
+    # email sender for changed 
+    If a user wants to change password , credentials or email . They have to go through a email otp verification 
+    -> create a email sender with dedicated msg ::::  done 
+    -> create a otp db to save send otp :::: 
+    -> create a route to change user data as they req 
+
+    # disable account or delete 
+    Here eather delete or disable the user account ::: just mark so that if user ever want to recover its data or restore account . They can do it without any issue as soon as they login .  
 
 
 

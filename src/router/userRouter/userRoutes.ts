@@ -1,4 +1,4 @@
-import {Router , Response , Request} from 'express';
+import {Router , Response , Request, request, response} from 'express';
 export const router  = Router();
 
 // hashing 
@@ -13,7 +13,6 @@ dotenv.config();
 import { statusCode } from '../../types';
 
 // middleware 
-import { loginRecordMiddleWare } from '../../middleware/loginRecordMiddleware';
 
 
 //db 
@@ -70,52 +69,74 @@ router.post('/sighup',async  function( req : Request, res : Response) {
 });
 
 // login 
-router.get('/login',loginRecordMiddleWare,async function(req,res){
+// here i have to add a create table to loginRecord to add sesson for the user 
+// also increment in totalLogin in table "LoginCount"
+router.get('/login',async function(req,res){
     const payload = req.body;
     // check if user exist or not 
-     const result = await prisma.user.findUnique({
-    where : {
-        email : payload.email
-    }
-   });
-    // if yes then check password else return false 
-   
-    if(!result){ // user do not exist send error  
-        res.status(statusCode.accessDenied).json({
-            msg : "user does not exist " , 
-            ReqStatus : false 
-        });
-    }else{ // if user do exist , check for password 
-        // create hashed version of the password send by user 
-        const  hashVersion = hashSync(payload.password ,10);
-        if(hashVersion === result.password){
-            
-            // create a jason token
-            const jsonKey    = process.env.jsonSecretKey;
-            if (!jsonKey) {
-                res.status(statusCode.ServerError).json({
-                    msg: "Server error: JSON secret key is not defined.",
-                    ReqStatus: false
+    try{
+        const result = await prisma.user.findUnique({
+            where : {
+                email : payload.email
+            }
+           });
+            // if yes then check password else return false 
+           
+            if(!result){ // user do not exist send error  
+                res.status(statusCode.accessDenied).json({
+                    msg : "user does not exist " , 
+                    ReqStatus : false 
                 });
-            }else{
-                const time = new Date()
-                const token = sign({
-                    email : payload.email , 
-                    time
-                }, jsonKey);
-               res.cookie('auth_token' , token)   
-            }   
-        }else{
-            res.status(statusCode.accessDenied).json({
-                msg  : "password is incorrect !!" , 
-                ReqStatus : false 
-            })
-        }
-    } 
+            }else{ // if user do exist , check for password 
+                // create hashed version of the password send by user 
+                const  hashVersion = hashSync(payload.password ,10);
+                if(hashVersion === result.password){
+                    
+                    // create a jason token
+                    const jsonKey    = process.env.jsonSecretKey;
+                    if (!jsonKey) {
+                        res.status(statusCode.ServerError).json({
+                            msg: "Server error: JSON secret key is not defined.",
+                            ReqStatus: false
+                        });
+                    }else{
+                        const time = new Date()
+                        const token = sign({
+                            email : payload.email , 
+                            time
+                        }, jsonKey);
+                        // send this cookie to loginRecord
+                        await prisma.loginRecord.create({
+                            data : {
+                                date : time , 
+                                userId  : result.id , 
+                                token : token
+                            }
+                        });
+                        
+                       res.cookie('auth_token' , token)   
+                    }   
+                }else{
+                    res.status(statusCode.accessDenied).json({
+                        msg  : "password is incorrect !!" , 
+                        ReqStatus : false 
+                    })
+                }
+            } 
+    }catch(e){
+        console.log(e)
+    }
 
 });
 
+
+
 // edit userData router 
+// edit data of a user with email to verify  credibility of the source .:::: authed 
+
+// step 1  ::: create a dynamic email sender based on 
+
+
 
 // delete or disable router 
 

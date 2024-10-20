@@ -5,5 +5,6 @@ export enum statusCode {
     accessDenied  = 404 , 
     alreadyExist = 409 , 
     userCreated  = 201,
-    ServerError = 500
+    ServerError = 500 , 
+    wrongInput = 422
 }   
