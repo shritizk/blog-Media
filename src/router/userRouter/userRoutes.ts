@@ -1,16 +1,25 @@
-import {Router , Response , Request, request, response} from 'express';
+import {Router , Response , Request } from 'express';
 export const router  = Router();
 
 // hashing 
 import {hashSync} from 'bcryptjs';
 import { sign} from 'jsonwebtoken';
 
+// otp 
+const otpGenerator = require('otp-generator')
+
+// email sender 
+import { secretData } from '../../config'; 
+
+//utils 
+import { emailSend } from '../../utils/emailsSender';
+import { userExist } from '../../utils/userExist';
 //.env
 import dotenv from 'dotenv';
 dotenv.config();
 
 // types 
-import { Result, statusCode, userEcxist } from '../../types';
+import { emailSender, Result, secretDataType, statusCode, userEcxist } from '../../types';
 
 // middleware 
 
@@ -26,31 +35,6 @@ const prisma = new PrismaClient;
 //     userId? : number
 // }
 
-async function userExist( prop : userEcxist) : Promise<Result | null> {
-    try { 
-        if(prop.userId){    
-            const result = await prisma.user.findUnique({
-                where : {
-                    id : prop.userId
-                }
-            }) ; 
-            return result ; 
-        }else if(prop.email){
-            const result = await prisma.user.findUnique({
-                where : {
-                    email : prop.email
-                }
-            }) ; 
-            return result ; 
-        }else{
-            throw new Error("please provide userId or email");
-        }; 
-        
-    }catch(e){
-        console.log(e);
-        throw new Error(" sorry something went wrong ");
-    }
-};   
 
 
 
@@ -157,16 +141,37 @@ router.get('/login',async function(req,res){
 // edit userData router 
 // edit data of a user with email to verify  credibility of the source .:::: authed 
 
-// step 1  ::: create a dynamic email sender based on :: data -> text  ,  userId
-function emailSendder(){
-    
-}
+
+
 router.post('credentialChnager',async function(req : Request , res : Response){
     const payload = req.body;
     // first check if user exist or not 
     const result = await userExist({ userId : payload.userId });
-    if(result ){
 
+    // create a otp  and send to otp 
+    // userId Int
+    // otp Int
+    // time DateTime
+    const time = new Date();
+    const otp : number= otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false , lowerCaseAlphabets : false });
+    const OtpState = await prisma.otpstore.create({
+        data : {
+            userId : payload.userId ,
+            otp : otp , 
+            time : time            
+        }
+    });
+
+    if(result ){
+        const sendEmail = emailSend(payload , secretData);
+        // check if email is send or not If not then res with error and remove otp from db 
+        if(!sendEmail){
+            await prisma.otpstore.delete({
+                where : {
+                    id : OtpState.id
+                }
+            })
+        }
     }else{
 
     }

@@ -1,3 +1,4 @@
+import { secretData } from "./config";
 
 
 
@@ -26,3 +27,13 @@ export type Result =  {
     Fullname :   String 
     password  : String 
 }
+
+export interface emailSender {
+    email : String  ; 
+    text : String  ;
+}
+
+export type secretDataType =  { 
+    email : string ;
+    password : string ; 
+} 
