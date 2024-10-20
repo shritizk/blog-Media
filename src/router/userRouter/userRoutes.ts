@@ -131,7 +131,9 @@ router.get('/login',async function(req,res){
                 }
             } 
     }catch(e){
-        console.log(e)
+        res.json({
+            msg : "something went wrong !!"
+        })
     }
 
 });
@@ -144,6 +146,7 @@ router.get('/login',async function(req,res){
 
 
 router.post('credentialChnager',async function(req : Request , res : Response){
+   try{
     const payload = req.body;
     // first check if user exist or not 
     const result = await userExist({ userId : payload.userId });
@@ -156,7 +159,7 @@ router.post('credentialChnager',async function(req : Request , res : Response){
     const otp : number= otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false , lowerCaseAlphabets : false });
     const OtpState = await prisma.otpstore.create({
         data : {
-            userId : payload.userId ,
+            id : payload.userId ,
             otp : otp , 
             time : time            
         }
@@ -168,14 +171,72 @@ router.post('credentialChnager',async function(req : Request , res : Response){
         if(!sendEmail){
             await prisma.otpstore.delete({
                 where : {
-                    id : OtpState.id
+                    id : payload.userId
                 }
             })
+        }else{
+            res.status(statusCode.ok).json({
+                msg : "send otp" , 
+                ReqStatus : true
+            });
         }
     }else{
-
+        res.status(statusCode.accessDenied).json({
+            msg : "user does not exit " , 
+            ReqStatus : false
+        });
     }
+   }catch(e){
+    res.json({
+        msg : "something went wrong !!"
+    })
+   }
 });
+
+// route to check otp 
+router.delete('checkOtp',async function(req : Request , res : Response ){
+    // otp , id , cause 
+    const payload = req.body;
+    // if otp is correct it will delete  
+    const result = await prisma.otpstore.findUnique({
+        where : {
+             id : payload.userId , 
+             otp : payload.otp
+        }
+    });
+
+    
+    if(result){
+        
+        // in frontend show screen based on cause 
+        res.status(statusCode.ok).json({
+            msg : " verification done !!" , 
+            ReqStatus : true , 
+            cause : payload.cause
+        });
+        await prisma.otpstore.delete({
+            where : {
+                 id : payload.id , 
+                 otp  :payload
+            }
+        });
+    }else{
+        await prisma.otpstore.delete({
+            where : {
+                 id : payload.id , 
+                 otp  :payload
+            }
+        });
+        res.status(statusCode.accessDenied).json({
+            msg : "wrong otp" , 
+            ReqStaus : false 
+        });
+    };
+}); 
+
+// to update data of user 
+ 
+
 
 // delete or disable router 
 

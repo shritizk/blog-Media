@@ -20,9 +20,10 @@ feature to add
         -> email :: to send email to user 
         
     If a user wants to change password , credentials or email . They have to go through a email otp verification 
-    -> create a email sender with dedicated msg ::::  done 
-    -> create a otp db to save send otp :::: 
-    -> create a route to change user data as they req 
+    
+    For this i have created a email Otp sended with dedicated msg in it . 
+    after that it will send a email to user , user will be redirected to the otp verifcation screen where they have to send a req for next step.
+
 
     # disable account or delete 
     Here eather delete or disable the user account ::: just mark so that if user ever want to recover its data or restore account . They can do it without any issue as soon as they login .  

@@ -26,16 +26,14 @@ id      Int      @id @default(autoincrement())
 // data that user will get is the Date of login 
 
 model loginRecord { 
- id      Int      @id @default(autoincrement())
+ id      Int    @unique
  date DateTime 
- userId Int 
   token String @unique
 }
 
 // otp db
 model otpstore {
-   id Int @id @default(autoincrement())
-   userId Int
+   id Int @unique
    otp Int
    time DateTime
 }
