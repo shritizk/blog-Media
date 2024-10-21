@@ -37,3 +37,11 @@ model deletedAcc {
   id Int @unique
   date DateTime
 }
+
+
+// db to raise req with text 
+model support {
+  id Int @unique
+  paragraph String
+  cause String
+}

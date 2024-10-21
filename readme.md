@@ -19,10 +19,9 @@ feature to add
         -> userId :: to be searched in db to check if user even exist 
         -> email :: to send email to user 
         
-    this is 3 step process -> step 1 : send a email otp -> a route 
-                            step 2 :  verify otp  -> route 
-                            step 3  : alter data after verification -> route 
-
+        it will return a hashed version of otp 
+        and in fronend it will hash the otp that user will write . if the otp is correct and matchs the hashed version then it will send  a req to change credentials else not .
+        
 
     # disable account or delete 
     Here eather delete or disable the user account ::: just mark so that if user ever want to recover its data or restore account . They can do it without any issue as soon as they login .  

@@ -1,4 +1,4 @@
-import {Router , Response , Request, text } from 'express';
+import {Router , Response , Request} from 'express';
 export const router  = Router();
 
 // hashing 
@@ -14,6 +14,7 @@ import { secretData } from '../../config';
 //utils 
 import { emailSend } from '../../utils/emailsSender';
 import { userExist } from '../../utils/userExist';
+import { chnageCredentials } from '../../utils/credentialChnage';
 //.env
 import dotenv from 'dotenv';
 dotenv.config();
@@ -32,7 +33,6 @@ const userSchema = z.object({
 
 //db 
 import {PrismaClient} from '@prisma/client';
-import { chnageCredentials } from '../../utils/credentialChnage';
 const prisma = new PrismaClient;
 // here i am expecting that all the input validation are already done in front end it self 
 
@@ -316,7 +316,7 @@ router.put('accstatus',async function (req : Request , res : Response) {
             throw new Error("something  went wong !!")
         }
     }else{
-        // send a error if user does not exist 
+        // send a error if user does not exist  
         res.status(statusCode.accessDenied).json({
             msg : "user do not exist !" , 
             ReqStatus : false
@@ -324,6 +324,9 @@ router.put('accstatus',async function (req : Request , res : Response) {
     }
 
 });
+
+// ad a db to store delted account details , it will come in use when making a support system  to recover acc and also report account or report bug . 
+
 // make a checker in login to be sure account is not disabled 
 // if accoiunt is disabled and not in delted table then enable account 
 
