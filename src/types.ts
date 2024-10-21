@@ -1,4 +1,4 @@
-import { secretData } from "./config";
+
 
 
 
@@ -30,7 +30,8 @@ export type Result =  {
 
 export interface emailSender {
     email : String  ; 
-    text : String  ;
+    cause : string ; 
+    otp : number;
 }
 
 export type secretDataType =  { 

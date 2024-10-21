@@ -13,6 +13,7 @@ import { emailSender } from "../types";
 
 export async function emailSend(prop : emailSender ,secretData : secretDataType ){
 
+
     const transporter = nodemailer.createTransport({
         host: "smtp.ethereal.email",
         port: 587,
@@ -29,7 +30,7 @@ export async function emailSend(prop : emailSender ,secretData : secretDataType 
         from: `${secretData.email}`, // sender address
         to: `${prop.email}`, // list of receivers
         subject: "One Time Password", // Subject line
-        text: `${prop.text}` // plain text body
+        text: `Your otp for ${prop.cause} is  ${prop.otp}` // plain text body
         });
         return true
         
