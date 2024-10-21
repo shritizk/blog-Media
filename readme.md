@@ -19,10 +19,9 @@ feature to add
         -> userId :: to be searched in db to check if user even exist 
         -> email :: to send email to user 
         
-    If a user wants to change password , credentials or email . They have to go through a email otp verification 
-    
-    For this i have created a email Otp sended with dedicated msg in it . 
-    after that it will send a email to user , user will be redirected to the otp verifcation screen where they have to send a req for next step.
+    this is 3 step process -> step 1 : send a email otp -> a route 
+                            step 2 :  verify otp  -> route 
+                            step 3  : alter data after verification -> route 
 
 
     # disable account or delete 

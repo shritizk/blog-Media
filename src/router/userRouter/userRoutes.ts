@@ -2,7 +2,7 @@ import {Router , Response , Request, text } from 'express';
 export const router  = Router();
 
 // hashing 
-import {hashSync} from 'bcryptjs';
+import { hashSync} from 'bcryptjs';
 import { sign} from 'jsonwebtoken';
 
 // otp 
@@ -19,13 +19,20 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // types 
-import { emailSender, Result, secretDataType, statusCode, userEcxist } from '../../types';
+import { statusCode } from '../../types';
 
-// middleware 
+// zod
+import {z} from "zod";
+const userSchema = z.object({
+    email: z.string().email('Invalid email format'),
+    fullname: z.string().min(1, 'Fullname is required'),
+    password: z.string().min(6, 'Password must be at least 6 characters long'),
+  });
 
 
 //db 
-import {PrismaClient, user} from '@prisma/client';
+import {PrismaClient} from '@prisma/client';
+import { chnageCredentials } from '../../utils/credentialChnage';
 const prisma = new PrismaClient;
 // here i am expecting that all the input validation are already done in front end it self 
 
@@ -46,6 +53,14 @@ router.post('/sighup',async  function( req : Request, res : Response) {
     // Fullname 
     // password 
     try { 
+        // do zod validation 
+        if(!userSchema.safeParse(payload)){
+            res.status(statusCode.wrongInput).json({
+                msg : "wrong input !!" , 
+                ReqStatus : false
+            })
+        }
+
         // check if user exist in db or not and if not then add else send a error about that 
        const result = await userExist({ email  : payload.email} )
        if(result){ // user already exist 
@@ -140,196 +155,85 @@ router.get('/login',async function(req,res){
     }
 
 });
-
-
-
 // edit userData router 
 // edit data of a user with email to verify  credibility of the source .:::: authed 
-
-
-
+// better way to do emailvalidation 
 router.post('emailSender',async function(req : Request , res : Response){
-   try{
-    // email 
-    // id 
-    // cause 
-        // cause can be 
-            //password 
-            // email 
-            // general - in our db Fullname
+    // Id
+    // email
+    // cause
     const payload = req.body;
-    // first check if user exist or not 
-    const result = await userExist({ userId : payload.Id });
 
-    // create a otp  and send to otp 
-    // userId Int
-    // otp Int
-    // time DateTime
-    const time = new Date();
+    // send email if user exist 
+        // check if user exist 
+    const userEcxist = await userExist({userId : payload.id});
+    
+    // if yes 
+    if(userEcxist){  
+        try{
+               
+    // generate a otp 
     const otp : number= otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false , lowerCaseAlphabets : false });
-    await prisma.otpstore.create({
-        data : {
-            id : payload.userId ,
-            otp : otp , 
-            time : time            
-        }
-    });
-    // cause we need to check  for the text
-    if(payload.cause === "email"){
-        const someText = "otp for email"
-    }else if (payload.cause === "password"){
-        const text = "otp for password "
-    }
-    if(result ){
-        
-        const sendEmail = emailSend({email : payload.email , cause :payload.cause ,otp : otp } , secretData);
-        // check if email is send or not If not then res with error and remove otp from db 
-        if(!sendEmail){
-            await prisma.otpstore.delete({
-                where : {
-                    id : payload.userid
-                }
-            })
-        }else{
+    const TheString : string     = String(otp) + String({id : payload.id , email : payload.email , cause : payload.cause}) ; 
+    const hashedOtp : string = hashSync(TheString ,  String({id : payload.id , email : payload.email , cause : payload.cause}) ) ;
+            // send email with the cuase 
+        const sendEmail = emailSend({email : payload.email , cause :payload.cause ,otp : hashedOtp } , secretData);
             res.status(statusCode.ok).json({
-                msg : "send otp" , 
-                ReqStatus : true
-            });
+                msg : "email send ;" , 
+                ReqStatus : true , 
+                hashedOtp : hashedOtp
+            });    
+        
+            
+            
+        }catch(e){
+            // something went wrong 
+            console.log(e);
+            res.status(statusCode.ServerError).json({
+                msg : "something went wrong !!" ,
+                ReqStatus : false
+            })
         }
-    }else{
-        res.status(statusCode.accessDenied).json({
-            msg : "user does not exit " , 
-            ReqStatus : false
-        });
     }
-   }catch(e){
-    res.status(statusCode.ServerError).json({
-        msg : "something went wrong !!"
-    })
-
-   }
+else{
+        // send a error if user does not exist 
+        res.status(statusCode.accessDenied).json({
+            msg : "user do not exist !" , 
+            ReqStatus : false
+        })
+     } 
+   
+     
+        
 });
 
-// route to check otp 
-router.delete('checkOtp',async function(req : Request , res : Response ){
-    try { 
-            // otp , id , cause 
-    const payload = req.body;
-    // if otp is correct it will delete  
-    const result = await prisma.otpstore.findUnique({
-        where : {
-             id : payload.userId , 
-             otp : payload.otp
-        }
-    });
-
-    
-    if(result){
-        
-        // in frontend show screen based on cause 
-        res.status(statusCode.ok).json({
-            msg : " verification done !!" , 
-            ReqStatus : true , 
-            cause : payload.cause
-        });
-        await prisma.otpstore.delete({
-            where : {
-                 id : payload.id , 
-                 otp  :payload
-            }
-        });
-    }else{
-        await prisma.otpstore.delete({
-            where : {
-                 id : payload.id , 
-                 otp  :payload
-            }
-        });
-        res.status(statusCode.accessDenied).json({
-            msg : "wrong otp" , 
-            ReqStaus : false 
-        });
-    };
-    }catch(e){
-        res.status(statusCode.ServerError).json({
-            msg : "something went wrong !!"
-        })
-    }
-}); 
-
-// to update data of user 
- router.put('changeCredentials',async function(req : Request , res : Response){
-    try {
-    // cause 
-    // to be changed     
-    const payload = req.body;
-    
-    // check what is cause 
+// change credentials 
+router.put('chnageCredentials',async function(req : Request , res : Response){
+    // body 
+     // Id
     // email
-    //password
-    // credentials 
-    if(payload.cause === 'email'){
-        try {
-            await prisma.user.update({
-                where : {
-                    id : payload.id
-                } , data : {
-                    email : payload.email
-                }
-            });
+    // cause - > pass , email ,FullNmae 
+    const payload = req.body;
+
+    //check if user exist 
+    const result = await userExist({ userId : payload.Id });
+
+    if(result){
+        try {   
+            await chnageCredentials(payload);
         }catch(e){
-            res.status(statusCode.ServerError).json({msg : "due to some Error , email can not be changed write now !!" , ReqStatus : false});  
+            throw new Error("something  went wong !!")
         }
-    }
-    else if(payload.cause === 'password'){
-        try{
-            const password = hashSync(payload.password , 10);
-            await prisma.user.update({
-                where : {
-                    id : payload.id
-                } , data : {
-                    password : password
-                }
-            });
-        }catch(e){
-            res.status(statusCode.ServerError).json({msg : "due to some Error password can not be changed !!" , ReqStatus : false});
-        }
-    }
-    else if(payload.cause === 'credentials'){
-//id      Int
-//email   String   
-//Fullname    String 
-//password String 
-        try {
-            await prisma.user.update({
-                where : {
-                    id : payload.id
-                } , data : {
-                     Fullname : payload.Fullname 
-                }
-            });
-        }catch(e){
-            res.status(statusCode.ServerError).json({msg : "due to some Error credentials can not be changed !!" , ReqStatus : false});  
-        }
-    }
-    else {
-        res.status(statusCode.wrongInput).json({
-            msg : "wrong input given!!" , 
+    }else{
+        // send a error if user does not exist 
+        res.status(statusCode.accessDenied).json({
+            msg : "user do not exist !" , 
             ReqStatus : false
         });
     }
 
     
-    const userCheck = await userExist({ userId : payload.id});
-    }
-    catch(e){
-        res.status(statusCode.ServerError).json({
-            msg : "something went wrong !!"
-        })
-    }
-    
- });    
-
+})
 
 // delete or disable router 
 

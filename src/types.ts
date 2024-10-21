@@ -31,10 +31,21 @@ export type Result =  {
 export interface emailSender {
     email : String  ; 
     cause : string ; 
-    otp : number;
+    otp : string ;
 }
 
 export type secretDataType =  { 
     email : string ;
     password : string ; 
 } 
+
+export interface chnageCredentialsProp {
+    cause : "pass" | "email" | "Fullname" ; 
+    id : number ; 
+    emaiil? : string ;
+    newData : {
+        email? : string ; 
+        Fullname? : string ; 
+        password? : string ; 
+    }
+};
