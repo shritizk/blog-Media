@@ -327,9 +327,14 @@ router.delete('checkOtp',async function(req : Request , res : Response ){
             msg : "something went wrong !!"
         })
     }
+    
  });    
 
 
 // delete or disable router 
+
+// make a checker in login to be sure account is not disabled 
+// if accoiunt is disabled and not in delted table then enable account 
+
 
 

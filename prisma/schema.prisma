@@ -19,6 +19,7 @@ id      Int      @id @default(autoincrement())
   email   String   @unique
   Fullname    String 
   password String 
+  accountStatus Boolean @default(true)
 }
 
 // this table will manage login sessons for the users
@@ -36,4 +37,10 @@ model otpstore {
    id Int @unique
    otp Int
    time DateTime
+}
+
+// deleted account 
+model deletedAcc {
+  id Int @unique
+  date DateTime
 }
