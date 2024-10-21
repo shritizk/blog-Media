@@ -208,7 +208,7 @@ else{
 });
 
 // change credentials 
-router.put('chnageCredentials',async function(req : Request , res : Response){
+router.put('chnagecredentials',async function(req : Request , res : Response){
     // body 
      // Id
     // email
@@ -236,7 +236,94 @@ router.put('chnageCredentials',async function(req : Request , res : Response){
 })
 
 // delete or disable router 
+router.put('accstatus',async function (req : Request , res : Response) {
+    //body 
+    // id 
+    const payload = req.body;
+    
+    //query 
+    // delete | disable 
+    const queryPar = req.query.cause;
+    if(!queryPar){
+        res.status(statusCode.accessDenied).json({
+            msg : "No query available !!" , 
+            ReqStatus : false
+        });
+    }
 
+    //check if user exist 
+    const result = await userExist({ userId : payload.Id });
+    
+    if(result){
+        try {   
+           try{
+            await prisma.user.update({
+                where : {
+                    id : payload.Id
+                } , data: {
+                    accountStatus : false
+                }
+               });
+
+            if(queryPar === "delete"){
+                try { 
+                    // id Int 
+                    // date DateTime
+                    
+                    // get time 
+                    const time  = new Date();
+                    
+                    await prisma.deletedAcc.create({
+                        data : {
+                            id : payload.id , 
+                            date : time 
+                        }
+                    }) 
+                }catch(e){
+                    console.log(e);
+                    
+                    // undo the req 
+                  try{
+                    await prisma.user.update({
+                        where : {
+                            id : payload.Id
+                        } , data: {
+                            accountStatus : true
+                        }
+                       });
+
+                       res.status(statusCode.ok).json({
+                        msg : "account delted " , 
+                        ReqStatus : true
+                       
+                    })
+                  }catch(e){
+                    res.status(statusCode.ServerError).json({
+                        msg : "acc disabled but not deleted !!" , 
+                        ReqStatus : false
+                    })
+                  }
+
+                    
+                }
+            }
+           }catch(e){
+                throw new Error("something went wrong while updating account status!!");
+           }
+
+       
+        }catch(e){
+            throw new Error("something  went wong !!")
+        }
+    }else{
+        // send a error if user does not exist 
+        res.status(statusCode.accessDenied).json({
+            msg : "user do not exist !" , 
+            ReqStatus : false
+        });
+    }
+
+});
 // make a checker in login to be sure account is not disabled 
 // if accoiunt is disabled and not in delted table then enable account 
 
