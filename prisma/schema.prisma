@@ -32,13 +32,6 @@ model loginRecord {
   token String @unique
 }
 
-// otp db
-model otpstore {
-   id Int @unique
-   otp Int
-   time DateTime
-}
-
 // deleted account 
 model deletedAcc {
   id Int @unique
